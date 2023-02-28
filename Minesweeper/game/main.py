@@ -29,15 +29,36 @@ class Restart_button(pygame.sprite.Sprite):
         self.surf = pygame.image.load("restart.jpg").convert()
         self.surf_click = pygame.image.load("restart_click.jpg").convert()
         self.surf_defeat = pygame.image.load("restart_defeat.jpg").convert()
+        self.surf_defeat_click = pygame.image.load("restart_defeat_click.jpg").convert()
         self.surf_victory = pygame.image.load("restart_victory.jpg").convert()
+        self.surf_victory_click = pygame.image.load("restart_victory_click.jpg").convert()
+        self.button_rect = pygame.Rect(349, 38, 71, 72)
+        self.held = 0
 
     def show(self):
-        if defeat == 1:
-            screen.blit(self.surf_defeat, (349, 38))
-        elif victory == 1:
-            screen.blit(self.surf_victory, (349, 38))
-        else:
+        if defeat == 0 and victory == 0 and self.held == 0:
             screen.blit(self.surf, (349, 38))
+        elif defeat == 1 and self.held == 0:
+            screen.blit(self.surf_defeat, (349, 38))
+        elif victory == 1 and self.held == 0:
+            screen.blit(self.surf_victory, (349, 38))
+        elif defeat == 0 and victory == 0 and self.held == 1:
+            screen.blit(self.surf_click, (349, 38))
+        elif defeat == 1 and self.held == 1:
+            screen.blit(self.surf_defeat_click, (349, 38))
+        elif victory == 1 and self.held == 1:
+            screen.blit(self.surf_victory_click, (349, 38))
+
+    def hold(self, event):
+        if self.button_rect.collidepoint(event.pos):
+            self.held = 1
+        else:
+            self.held = 0
+    
+    def click(self, event):
+        self.held = 0
+        if self.button_rect.collidepoint(event.pos):
+            pass
 
 
 class Field(pygame.sprite.Sprite):
@@ -68,98 +89,36 @@ class Field(pygame.sprite.Sprite):
         self.held = 0
         self.number_of_mines = 0
         self.index_num = index_number
+        self.range = []
+        self.held_in_range = 0
+        self.flags_in_range = 0
 
+
+
+    def get_range(self):
+        if self.index_num == top_left:
+            self.range = [field_list[field_list.index(self) + 1], field_list[field_list.index(self) + 16], field_list[field_list.index(self) + 17]]
+        elif self.index_num in top_row:
+            self.range = [field_list[field_list.index(self) - 1], field_list[field_list.index(self) + 1], field_list[field_list.index(self) + 15], field_list[field_list.index(self) + 16], field_list[field_list.index(self) + 17]]
+        elif self.index_num == top_right:
+            self.range = [field_list[field_list.index(self) - 1], field_list[field_list.index(self) + 15], field_list[field_list.index(self) + 16]]
+        elif self.index_num == bottom_left:
+            self.range = [field_list[field_list.index(self) - 16], field_list[field_list.index(self) - 15], field_list[field_list.index(self) + 1]]
+        elif self.index_num in bottom_row:
+            self.range = [field_list[field_list.index(self) - 1], field_list[field_list.index(self) + 1], field_list[field_list.index(self) - 17], field_list[field_list.index(self) - 16], field_list[field_list.index(self) - 15]]
+        elif self.index_num == bottom_right:
+            self.range = [field_list[field_list.index(self) - 1], field_list[field_list.index(self) - 17], field_list[field_list.index(self) - 16]]
+        elif self.index_num in left_column:
+            self.range = [field_list[field_list.index(self) - 16], field_list[field_list.index(self) - 15], field_list[field_list.index(self) + 1], field_list[field_list.index(self) + 16], field_list[field_list.index(self) + 17]]
+        elif self.index_num in right_column:
+            self.range = [field_list[field_list.index(self) - 17], field_list[field_list.index(self) - 16], field_list[field_list.index(self) - 1], field_list[field_list.index(self) + 15], field_list[field_list.index(self) + 16]]
+        else:
+            self.range = [field_list[field_list.index(self) - 17], field_list[field_list.index(self) - 16], field_list[field_list.index(self) - 15], field_list[field_list.index(self) - 1], field_list[field_list.index(self) + 1], field_list[field_list.index(self) + 15], field_list[field_list.index(self) + 16], field_list[field_list.index(self) + 17]]
 
     def scan(self):
         number = 0
-        if self.index_num == top_left:
-            if field_list[field_list.index(self) + 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 17].mine == 1:
-                number += 1
-        elif self.index_num in top_row:
-            if field_list[field_list.index(self) - 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 15].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 17].mine == 1:
-                number += 1
-        elif self.index_num == top_right:
-            if field_list[field_list.index(self) - 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 15].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 16].mine == 1:
-                number += 1
-        elif self.index_num == bottom_left:
-            if field_list[field_list.index(self) - 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 15].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 1].mine == 1:
-                number += 1
-        elif self.index_num in bottom_row:
-            if field_list[field_list.index(self) - 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 17].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 15].mine == 1:
-                number += 1
-        elif self.index_num == bottom_right:
-            if field_list[field_list.index(self) - 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 17].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 16].mine == 1:
-                number += 1
-        elif self.index_num in left_column:
-            if field_list[field_list.index(self) - 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 15].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 17].mine == 1:
-                number += 1
-        elif self.index_num in right_column:
-            if field_list[field_list.index(self) - 17].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 15].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 16].mine == 1:
-                number += 1
-        else:
-            if field_list[field_list.index(self) - 17].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 15].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) - 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 1].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 15].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 16].mine == 1:
-                number += 1
-            if field_list[field_list.index(self) + 17].mine == 1:
+        for item in self.range:
+            if item.mine == 1:
                 number += 1
         self.number_of_mines = number
 
@@ -199,17 +158,39 @@ class Field(pygame.sprite.Sprite):
             #screen.blit(font.render(self.index_num, 1, pygame.Color("Red")), (self.position_x+11, self.position_y+11))
 
     def hold(self, event):
+        self.held_in_range = 0
+        for item in self.range:
+                if item.clicked == 1 and item.button_rect.collidepoint(event.pos):
+                    self.held_in_range = 1
+                    
         if self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 0:
             self.held = 1
-        else:
+        elif self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 1:
+            for item in self.range:
+                item.held = 1
+        elif self.held_in_range == 0:
             self.held = 0
 
+
     def click(self, event):
+        global defeat
+        self.held = 0
+        self.flags_in_range = 0
+        for item in self.range:
+            if item.flagged == 1:
+                self.flags_in_range += 1
+
         if self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 0:
             self.clicked = 1
             if self.mine == 1:
-                global defeat
                 defeat = 1
+        elif self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 1 and self.flags_in_range == self.number_of_mines:
+            for item in self.range:
+                if item.flagged == 0:
+                    item.clicked = 1
+                    if item.mine == 1:
+                        defeat = 1
+        
 
     def right_click(self, event):
         if self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 0:
@@ -221,66 +202,21 @@ class Field(pygame.sprite.Sprite):
 
     
     def autoreveal(self):
-        if self.index_num == top_left and self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) + 1].clicked = 1
-            field_list[field_list.index(self) + 16].clicked = 1
-            field_list[field_list.index(self) + 17].clicked = 1
-        elif self.index_num in top_row and self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) - 1].clicked = 1
-            field_list[field_list.index(self) + 1].clicked = 1
-            field_list[field_list.index(self) + 15].clicked = 1
-            field_list[field_list.index(self) + 16].clicked = 1
-            field_list[field_list.index(self) + 17].clicked = 1
-        elif self.index_num == top_right and self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) - 1].clicked = 1
-            field_list[field_list.index(self) + 15].clicked = 1
-            field_list[field_list.index(self) + 16].clicked = 1
-        elif self.index_num == bottom_left and self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) + 1].clicked = 1
-            field_list[field_list.index(self) - 16].clicked = 1
-            field_list[field_list.index(self) - 15].clicked = 1
-        elif self.index_num in bottom_row and self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) - 1].clicked = 1
-            field_list[field_list.index(self) + 1].clicked = 1
-            field_list[field_list.index(self) - 17].clicked = 1
-            field_list[field_list.index(self) - 16].clicked = 1
-            field_list[field_list.index(self) - 15].clicked = 1
-        elif self.index_num == bottom_right and self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) - 1].clicked = 1
-            field_list[field_list.index(self) - 17].clicked = 1
-            field_list[field_list.index(self) - 16].clicked = 1
-        elif self.index_num in left_column and self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) - 16].clicked = 1
-            field_list[field_list.index(self) - 15].clicked = 1
-            field_list[field_list.index(self) + 1].clicked = 1
-            field_list[field_list.index(self) + 16].clicked = 1
-            field_list[field_list.index(self) + 17].clicked = 1
-        elif self.index_num in right_column and self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) - 17].clicked = 1
-            field_list[field_list.index(self) - 16].clicked = 1
-            field_list[field_list.index(self) - 1].clicked = 1
-            field_list[field_list.index(self) + 15].clicked = 1
-            field_list[field_list.index(self) + 16].clicked = 1
-        elif self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
-            field_list[field_list.index(self) - 17].clicked = 1
-            field_list[field_list.index(self) - 16].clicked = 1
-            field_list[field_list.index(self) - 15].clicked = 1
-            field_list[field_list.index(self) - 1].clicked = 1
-            field_list[field_list.index(self) + 1].clicked = 1
-            field_list[field_list.index(self) + 15].clicked = 1
-            field_list[field_list.index(self) + 16].clicked = 1
-            field_list[field_list.index(self) + 17].clicked = 1
+        if self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
+            for item in self.range:
+                item.clicked = 1
 
 
+field_list = []
+# number of mines: 40
+# a list containing the fields where there is a mine
+mine_list = []
 victory = 0
 defeat = 0
 counter_x = 33
 counter_y = 149
 index_number = 0
-field_list = []
-# number of mines: 40
-# a list containing the fields where there is a mine
-mine_list = []
+
 for number in range(40):
     add = random.randint(1,257)
     while add in mine_list:
@@ -309,9 +245,12 @@ bottom_right = 255
 left_column = [16,32,48,64,80,96,112,128,144,160,176,192,208,224]
 right_column = [31,47,63,79,95,111,127,143,159,175,191,207,223,239]
 
+
 res = Restart_button()
 
 
+for item in field_list:
+    item.get_range()
 
 for item in field_list:
     item.scan()
@@ -334,14 +273,15 @@ while running:
         # Did the user click the window close button? If so, stop the loop.
         elif event.type == QUIT:
             running = False
-        elif defeat == 0:
-            if event.type == MOUSEBUTTONDOWN and event.button == LEFT:
+        elif event.type == MOUSEBUTTONDOWN and event.button == LEFT:
                 lmb = 1
-            elif event.type == MOUSEBUTTONUP and event.button == LEFT:
-                for item in field_list:
-                    item.click(event)
-                lmb = 0
-            elif event.type == MOUSEBUTTONDOWN and event.button == RIGHT and rmb == 0:
+        elif event.type == MOUSEBUTTONUP and event.button == LEFT:
+            for item in field_list:
+                item.click(event)
+            res.click(event)
+            lmb = 0
+        elif defeat == 0:
+            if event.type == MOUSEBUTTONDOWN and event.button == RIGHT and rmb == 0:
                 rmb = 1
                 for item in field_list:
                     item.right_click(event)
@@ -352,12 +292,13 @@ while running:
     frame = pygame.image.load("frame3.jpg").convert()
     screen.blit(frame, (0,0))
 
-    #if defeat == 0:
-        #for item in field_list:
-            #item.click(event)
+
     if lmb == 1:
-        for item in field_list:
-            item.hold(event)
+        if defeat == 0:
+            for item in field_list:
+                item.hold(event)
+        res.hold(event)
+        
 
 
 
