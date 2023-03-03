@@ -58,7 +58,33 @@ class Restart_button(pygame.sprite.Sprite):
     def click(self, event):
         self.held = 0
         if self.button_rect.collidepoint(event.pos):
-            pass
+            global defeat
+            global victory
+            global mine_list
+            global is_mine
+            for item in field_list:
+                item.flagged = 0
+                item.clicked = 0
+            defeat = 0
+            victory = 0
+
+            mine_list.clear()
+            for number in range(40):
+                add = random.randint(1,257)
+                while add in mine_list:
+                    add = random.randint(1,257)
+                mine_list.append(add)
+
+            for item in field_list:
+                if item.index_num in mine_list:
+                    item.mine = 1
+                else:
+                    item.mine = 0
+
+            for item in field_list:
+                item.get_range()
+                item.scan()
+            
 
 
 class Field(pygame.sprite.Sprite):
@@ -276,8 +302,9 @@ while running:
         elif event.type == MOUSEBUTTONDOWN and event.button == LEFT:
                 lmb = 1
         elif event.type == MOUSEBUTTONUP and event.button == LEFT:
-            for item in field_list:
-                item.click(event)
+            if defeat == 0 and victory == 0:
+                for item in field_list:
+                    item.click(event)
             res.click(event)
             lmb = 0
         elif defeat == 0:
@@ -288,13 +315,24 @@ while running:
             elif event.type == MOUSEBUTTONUP and event.button == RIGHT:
                 rmb = 0
 
+    unclicked_list = []
+    for item in field_list:
+        if item.mine == 0 and item.clicked == 0:
+            unclicked_list.append(item)
+    if unclicked_list == []:
+        victory = 1
+        for item in field_list:
+            if item.mine == 1:
+                item.flagged = 1
+
+
     # Draw the frame
     frame = pygame.image.load("frame3.jpg").convert()
     screen.blit(frame, (0,0))
 
 
     if lmb == 1:
-        if defeat == 0:
+        if defeat == 0 and victory == 0:
             for item in field_list:
                 item.hold(event)
         res.hold(event)
