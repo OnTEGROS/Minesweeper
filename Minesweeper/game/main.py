@@ -1,6 +1,7 @@
 import pygame
 import random
 from datetime import datetime
+from pygame import mixer
 
 from pygame.locals import (
     K_ESCAPE,
@@ -14,6 +15,7 @@ SCREEN_WIDTH = 770
 SCREEN_HEIGHT = 881
 
 pygame.init()
+mixer.init
 
 font = pygame.font.SysFont("Arial", 20)
 
@@ -61,8 +63,6 @@ class Restart_button(pygame.sprite.Sprite):
         if self.button_rect.collidepoint(event.pos):
             global defeat
             global victory
-            global mine_list
-            global is_mine
             global score_recorded
             global click_count
             global current_time
@@ -70,11 +70,17 @@ class Restart_button(pygame.sprite.Sprite):
             global timer_ones
             global timer_tens
             global timer_hundreds
+            global defeat_sound_played
+            global defeat_animation_frame
+            global death_variant
             for item in field_list:
                 item.flagged = 0
                 item.clicked = 0
             defeat = 0
             victory = 0
+            death_variant = random.randint(1,2)
+            defeat_sound_played = 0
+            defeat_animation_frame = 0
             score_recorded = 0
             click_count = 0
             current_time = 0
@@ -270,11 +276,15 @@ defeat = 0
 click_count = 0
 score_recorded = 0
 current_time = 0
+frame_play_time = 0
 requirement = 1000
 timer_seconds = 0
 timer_ones = 0
 timer_tens = 0
 timer_hundreds = 0
+defeat_sound_played = 0
+defeat_animation_frame = 0
+death_variant = random.randint(1,2)
 counter_x = 33
 counter_y = 149
 index_number = 0
@@ -318,6 +328,27 @@ for item in field_list:
 
 lmb = 0
 rmb = 0
+
+
+def defeat_explode():
+    mixer.music.load("explosion.mp3")
+    mixer.music.set_volume(1.0)
+    mixer.music.play()
+
+animation_list = []
+for number in range(7,42):
+    ani_str = ("explosion_animation\explosion_"+str(number)+".PNG")
+    ani_add = pygame.image.load(ani_str).convert()
+    ani_add.set_colorkey(pygame.Color(255, 255, 255))
+    animation_list.append(ani_add)
+
+def defeat_vine():
+    mixer.music.load("vine_boom.mp3")
+    mixer.music.set_volume(1.0)
+    mixer.music.play()
+
+animation_vine = pygame.image.load("skull.PNG").convert()
+animation_vine.set_colorkey(pygame.Color(255, 255, 255))
 
 
 # Run until the user asks to quit
@@ -461,9 +492,44 @@ while running:
     screen.blit(mines_second, (655,41))
     screen.blit(mines_third, (691,41))
 
+    if defeat == 1 and defeat_sound_played == 0 and death_variant == 1:
+        defeat_explode()
+        defeat_sound_played = 1
+
+    if defeat == 1 and defeat_animation_frame <= 34 and death_variant == 1:
+        position_x_explosion = 0
+        position_y_explosion = 0
+        while position_x_explosion == 0 and position_y_explosion == 0:
+            for item in field_list:
+                if item.mine == 1 and item.clicked == 1:
+                    position_x_explosion = item.position_x
+                    position_y_explosion = item.position_y
+        screen.blit(animation_list[defeat_animation_frame], (position_x_explosion-300, position_y_explosion-160))
+        if current_time - frame_play_time > 17:
+            frame_play_time = pygame.time.get_ticks()
+            defeat_animation_frame += 1
+
+    if defeat == 1 and defeat_sound_played == 0 and death_variant == 2:
+        defeat_vine()
+        defeat_sound_played = 1
+
+    if defeat == 1 and defeat_animation_frame <= 34 and death_variant == 2:
+        position_x_explosion = 0
+        position_y_explosion = 0
+        while position_x_explosion == 0 and position_y_explosion == 0:
+            for item in field_list:
+                if item.mine == 1 and item.clicked == 1:
+                    position_x_explosion = item.position_x
+                    position_y_explosion = item.position_y
+        animation_vine.set_alpha(230-8*defeat_animation_frame)
+        vine_resized = pygame.transform.scale(animation_vine, (150+10*defeat_animation_frame,150+10*defeat_animation_frame))
+        screen.blit(vine_resized, (position_x_explosion+22-75-5*defeat_animation_frame, position_y_explosion+22-75-5*defeat_animation_frame))
+        defeat_animation_frame += 1
     
+
     
 
     pygame.display.flip()
 
+mixer.quit()
 pygame.quit()
