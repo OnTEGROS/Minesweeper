@@ -1,5 +1,6 @@
 import pygame
 import random
+from datetime import datetime
 
 from pygame.locals import (
     K_ESCAPE,
@@ -62,11 +63,19 @@ class Restart_button(pygame.sprite.Sprite):
             global victory
             global mine_list
             global is_mine
+            global score_recorded
+            global click_count
+            global current_time
+            global timer_seconds
             for item in field_list:
                 item.flagged = 0
                 item.clicked = 0
             defeat = 0
             victory = 0
+            score_recorded = 0
+            click_count = 0
+            current_time = 0
+            timer_seconds = 0
 
             mine_list.clear()
             for number in range(40):
@@ -200,6 +209,7 @@ class Field(pygame.sprite.Sprite):
 
     def click(self, event):
         global defeat
+        global click_count
         self.held = 0
         self.flags_in_range = 0
         for item in self.range:
@@ -208,21 +218,38 @@ class Field(pygame.sprite.Sprite):
 
         if self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 0:
             self.clicked = 1
-            if self.mine == 1:
+            if self.mine == 1 and click_count == 0:
+                mine_placed = 0
+                while mine_placed == 0:
+                    place = random.choice(field_list)
+                    if place.mine == 0 and place.index_num != self.index_num:
+                        place.mine = 1
+                        mine_placed = 1
+                        print("Mine placed!")
+                self.mine = 0
+                print("Mine removed!")
+                for item in field_list:
+                    item.scan()
+            elif self.mine == 1:
                 defeat = 1
+            click_count += 1
         elif self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 1 and self.flags_in_range == self.number_of_mines:
             for item in self.range:
                 if item.flagged == 0:
                     item.clicked = 1
                     if item.mine == 1:
                         defeat = 1
+            click_count += 1
         
 
     def right_click(self, event):
+        global click_count
         if self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 0:
             self.flagged = 1
+            click_count += 1
         elif self.button_rect.collidepoint(event.pos) and self.flagged == 1 and self.clicked == 0:
             self.flagged = 0
+            click_count += 1
 
 
 
@@ -239,6 +266,11 @@ field_list = []
 mine_list = []
 victory = 0
 defeat = 0
+click_count = 0
+score_recorded = 0
+current_time = 0
+requirement = 1000
+timer_seconds = 0
 counter_x = 33
 counter_y = 149
 index_number = 0
@@ -324,6 +356,21 @@ while running:
         for item in field_list:
             if item.mine == 1:
                 item.flagged = 1
+        if score_recorded == 0:
+            score_recorded = 1
+            now = datetime.now()
+            dt_string = now.strftime("%d. %m. %Y %H:%M:%S")
+            clicks_record = str(click_count)
+            time_record = str(timer_seconds)
+            with open("scores.txt", "a") as scores:
+                scores.write(dt_string)
+                scores.write(", finished in ")
+                scores.write(clicks_record)
+                scores.write(" clicks")
+                scores.write(" and ")
+                scores.write(time_record)
+                scores.write(" seconds")
+                scores.write("\n")
 
 
     # Draw the frame
@@ -347,6 +394,16 @@ while running:
         item.show()
     
     res.show()
+
+    
+    
+    
+    current_time = pygame.time.get_ticks()
+    if current_time >= requirement:  
+        requirement += 1000
+        if click_count > 0 and victory == 0 and defeat == 0:
+            timer_seconds += 1
+            print(f"timer: {timer_seconds}") 
 
     pygame.display.flip()
 
