@@ -67,6 +67,9 @@ class Restart_button(pygame.sprite.Sprite):
             global click_count
             global current_time
             global timer_seconds
+            global timer_ones
+            global timer_tens
+            global timer_hundreds
             for item in field_list:
                 item.flagged = 0
                 item.clicked = 0
@@ -76,19 +79,19 @@ class Restart_button(pygame.sprite.Sprite):
             click_count = 0
             current_time = 0
             timer_seconds = 0
+            timer_ones = 0
+            timer_tens = 0
+            timer_hundreds = 0
 
-            mine_list.clear()
-            for number in range(40):
-                add = random.randint(1,257)
-                while add in mine_list:
-                    add = random.randint(1,257)
-                mine_list.append(add)
+
 
             for item in field_list:
-                if item.index_num in mine_list:
-                    item.mine = 1
-                else:
-                    item.mine = 0
+                item.mine = 0
+            for number in range(40):
+                random_field = random.choice(field_list)
+                while random_field.mine == 1:
+                    random_field = random.choice(field_list)
+                random_field.mine = 1
 
             for item in field_list:
                 item.get_range()
@@ -118,7 +121,7 @@ class Field(pygame.sprite.Sprite):
         self.position_x = counter_x
         self.position_y = counter_y
         self.button_rect = pygame.Rect(self.position_x, self.position_y, 44, 44)
-        self.mine = is_mine
+        self.mine = 0
         self.flagged = 0
         self.clicked = 0
         self.held = 0
@@ -257,13 +260,11 @@ class Field(pygame.sprite.Sprite):
     def autoreveal(self):
         if self.clicked == 1 and self.number_of_mines == 0 and self.mine == 0:
             for item in self.range:
-                item.clicked = 1
+                if item.flagged == 0:
+                    item.clicked = 1
 
-
+# 40 mines
 field_list = []
-# number of mines: 40
-# a list containing the fields where there is a mine
-mine_list = []
 victory = 0
 defeat = 0
 click_count = 0
@@ -271,21 +272,14 @@ score_recorded = 0
 current_time = 0
 requirement = 1000
 timer_seconds = 0
+timer_ones = 0
+timer_tens = 0
+timer_hundreds = 0
 counter_x = 33
 counter_y = 149
 index_number = 0
 
-for number in range(40):
-    add = random.randint(1,257)
-    while add in mine_list:
-        add = random.randint(1,257)
-    mine_list.append(add)
-
 for number in range(1,257):
-    if number in mine_list:
-        is_mine = 1
-    else:
-        is_mine = 0
     field_list.append(Field())
     index_number += 1
     if number % 16 == 0:
@@ -293,6 +287,14 @@ for number in range(1,257):
         counter_x -= 660
     else:
         counter_x += 44
+
+for number in range(40):
+    random_field = random.choice(field_list)
+    while random_field.mine == 1:
+        random_field = random.choice(field_list)
+    random_field.mine = 1
+
+
 
 top_left = 0
 top_row = [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
@@ -302,6 +304,7 @@ bottom_row = [241,242,243,244,245,246,247,248,249,250,251,252,253,254]
 bottom_right = 255
 left_column = [16,32,48,64,80,96,112,128,144,160,176,192,208,224]
 right_column = [31,47,63,79,95,111,127,143,159,175,191,207,223,239]
+display_numbers = ["timer_zero.JPG", "timer_one.jpg", "timer_two.jpg", "timer_three.jpg", "timer_four.jpg", "timer_five.jpg", "timer_six.jpg", "timer_seven.jpg", "timer_eight.jpg", "timer_nine.jpg", ]
 
 
 res = Restart_button()
@@ -347,6 +350,62 @@ while running:
             elif event.type == MOUSEBUTTONUP and event.button == RIGHT:
                 rmb = 0
 
+    # the timer
+    current_time = pygame.time.get_ticks()
+    if current_time >= requirement:  
+        requirement += 1000
+        if click_count > 0 and victory == 0 and defeat == 0:
+            timer_seconds += 1
+            if timer_seconds <= 999:
+                timer_ones += 1
+                if timer_ones == 10:
+                    timer_tens += 1
+                    timer_ones = 0
+                if timer_tens == 10:
+                    timer_hundreds += 1
+                    timer_tens = 0
+        mines_remaining_test = 0
+        for item in field_list:
+            if item.mine == 1:
+                mines_remaining_test += 1
+
+    timer_first = pygame.image.load(display_numbers[timer_hundreds]).convert()
+    timer_second = pygame.image.load(display_numbers[timer_tens]).convert()
+    timer_third = pygame.image.load(display_numbers[timer_ones]).convert()
+
+    # mine counter
+    remaning_mines = 0
+    for item in field_list:
+        if item.mine == 1:
+            remaning_mines += 1
+    mines_tens = 4
+    mines_ones = 0
+    if defeat == 0:
+        for item in field_list:
+            if item.flagged == 1:
+                remaning_mines -= 1
+                if remaning_mines >= 0:
+                    mines_ones -= 1
+                    if mines_ones == -1:
+                        mines_tens -= 1
+                        mines_ones = 9
+    else:
+        for item in field_list:
+            if item.flagged == 1 and item.mine == 1:
+                remaning_mines -= 1
+                if remaning_mines >= 0:
+                    mines_ones -= 1
+                    if mines_ones == -1:
+                        mines_tens -= 1
+                        mines_ones = 9
+
+    mines_first = pygame.image.load("timer_zero.JPG").convert()
+    mines_second = pygame.image.load(display_numbers[mines_tens]).convert()
+    mines_third = pygame.image.load(display_numbers[mines_ones]).convert()
+
+    
+
+    # checking for victory
     unclicked_list = []
     for item in field_list:
         if item.mine == 0 and item.clicked == 0:
@@ -374,7 +433,7 @@ while running:
 
 
     # Draw the frame
-    frame = pygame.image.load("frame3.jpg").convert()
+    frame = pygame.image.load("frame.jpg").convert()
     screen.blit(frame, (0,0))
 
 
@@ -395,15 +454,15 @@ while running:
     
     res.show()
 
+    screen.blit(timer_first, (44,41))
+    screen.blit(timer_second, (80,41))
+    screen.blit(timer_third, (116,41))
+    screen.blit(mines_first, (619,41))
+    screen.blit(mines_second, (655,41))
+    screen.blit(mines_third, (691,41))
+
     
     
-    
-    current_time = pygame.time.get_ticks()
-    if current_time >= requirement:  
-        requirement += 1000
-        if click_count > 0 and victory == 0 and defeat == 0:
-            timer_seconds += 1
-            print(f"timer: {timer_seconds}") 
 
     pygame.display.flip()
 
