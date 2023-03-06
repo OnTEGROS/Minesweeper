@@ -61,6 +61,9 @@ class Restart_button(pygame.sprite.Sprite):
     def click(self, event):
         self.held = 0
         if self.button_rect.collidepoint(event.pos):
+            mixer.music.load("sound4.mp3")
+            mixer.music.set_volume(0.7)
+            mixer.music.play()
             global defeat
             global victory
             global score_recorded
@@ -227,36 +230,60 @@ class Field(pygame.sprite.Sprite):
 
         if self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 0:
             self.clicked = 1
+            if self.mine == 0:
+                mixer.music.load("sound2.mp3")
+                mixer.music.set_volume(1.2)
+                mixer.music.play()
             if self.mine == 1 and click_count == 0:
+                mixer.music.load("sound2.mp3")
+                mixer.music.set_volume(1.2)
+                mixer.music.play()
                 mine_placed = 0
                 while mine_placed == 0:
                     place = random.choice(field_list)
                     if place.mine == 0 and place.index_num != self.index_num:
                         place.mine = 1
                         mine_placed = 1
-                        print("Mine placed!")
                 self.mine = 0
-                print("Mine removed!")
                 for item in field_list:
                     item.scan()
             elif self.mine == 1:
                 defeat = 1
             click_count += 1
-        elif self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 1 and self.flags_in_range == self.number_of_mines:
-            for item in self.range:
-                if item.flagged == 0:
-                    item.clicked = 1
-                    if item.mine == 1:
-                        defeat = 1
+        elif self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 1:
+            sound_play_clearance = 1
+            if self.flags_in_range == self.number_of_mines:
+                sound_play_clearance = 0
+                for item in self.range:
+                    if item.flagged == 0 and item.clicked == 0:
+                        item.clicked = 1
+                        sound_play_clearance = 2
+                        if item.mine == 1:
+                            defeat = 1
+                            sound_play_clearance = 0
+            if sound_play_clearance == 2:
+                mixer.music.load("sound2.mp3")
+                mixer.music.set_volume(1.2)
+                mixer.music.play()
+            elif sound_play_clearance == 1:
+                mixer.music.load("sound2a.mp3")
+                mixer.music.set_volume(1)
+                mixer.music.play()
             click_count += 1
         
 
     def right_click(self, event):
         global click_count
         if self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 0:
+            mixer.music.load("sound6.mp3")
+            mixer.music.set_volume(0.3)
+            mixer.music.play()
             self.flagged = 1
             click_count += 1
         elif self.button_rect.collidepoint(event.pos) and self.flagged == 1 and self.clicked == 0:
+            mixer.music.load("sound7.mp3")
+            mixer.music.set_volume(0.3)
+            mixer.music.play()
             self.flagged = 0
             click_count += 1
 
@@ -344,7 +371,7 @@ for number in range(7,42):
 
 def defeat_vine():
     mixer.music.load("vine_boom.mp3")
-    mixer.music.set_volume(1.0)
+    mixer.music.set_volume(0.6)
     mixer.music.play()
 
 animation_vine = pygame.image.load("skull.PNG").convert()
