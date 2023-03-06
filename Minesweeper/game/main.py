@@ -76,6 +76,7 @@ class Restart_button(pygame.sprite.Sprite):
             global defeat_sound_played
             global defeat_animation_frame
             global death_variant
+            global victory_sound_played
             for item in field_list:
                 item.flagged = 0
                 item.clicked = 0
@@ -91,6 +92,7 @@ class Restart_button(pygame.sprite.Sprite):
             timer_ones = 0
             timer_tens = 0
             timer_hundreds = 0
+            victory_sound_played = 0
 
 
 
@@ -232,11 +234,11 @@ class Field(pygame.sprite.Sprite):
             self.clicked = 1
             if self.mine == 0:
                 mixer.music.load("sound2.mp3")
-                mixer.music.set_volume(1.2)
+                mixer.music.set_volume(1)
                 mixer.music.play()
             if self.mine == 1 and click_count == 0:
                 mixer.music.load("sound2.mp3")
-                mixer.music.set_volume(1.2)
+                mixer.music.set_volume(1)
                 mixer.music.play()
                 mine_placed = 0
                 while mine_placed == 0:
@@ -263,7 +265,7 @@ class Field(pygame.sprite.Sprite):
                             sound_play_clearance = 0
             if sound_play_clearance == 2:
                 mixer.music.load("sound2.mp3")
-                mixer.music.set_volume(1.2)
+                mixer.music.set_volume(1)
                 mixer.music.play()
             elif sound_play_clearance == 1:
                 mixer.music.load("sound2a.mp3")
@@ -276,13 +278,13 @@ class Field(pygame.sprite.Sprite):
         global click_count
         if self.button_rect.collidepoint(event.pos) and self.flagged == 0 and self.clicked == 0:
             mixer.music.load("sound6.mp3")
-            mixer.music.set_volume(0.3)
+            mixer.music.set_volume(0.6)
             mixer.music.play()
             self.flagged = 1
             click_count += 1
         elif self.button_rect.collidepoint(event.pos) and self.flagged == 1 and self.clicked == 0:
             mixer.music.load("sound7.mp3")
-            mixer.music.set_volume(0.3)
+            mixer.music.set_volume(0.6)
             mixer.music.play()
             self.flagged = 0
             click_count += 1
@@ -311,6 +313,7 @@ timer_tens = 0
 timer_hundreds = 0
 defeat_sound_played = 0
 defeat_animation_frame = 0
+victory_sound_played = 0
 death_variant = random.randint(1,2)
 counter_x = 33
 counter_y = 149
@@ -359,7 +362,7 @@ rmb = 0
 
 def defeat_explode():
     mixer.music.load("explosion.mp3")
-    mixer.music.set_volume(1.0)
+    mixer.music.set_volume(0.9)
     mixer.music.play()
 
 animation_list = []
@@ -371,7 +374,7 @@ for number in range(7,42):
 
 def defeat_vine():
     mixer.music.load("vine_boom.mp3")
-    mixer.music.set_volume(0.6)
+    mixer.music.set_volume(0.55)
     mixer.music.play()
 
 animation_vine = pygame.image.load("skull.PNG").convert()
@@ -470,6 +473,11 @@ while running:
             unclicked_list.append(item)
     if unclicked_list == []:
         victory = 1
+        if victory_sound_played == 0:
+            mixer.music.load("sound9.mp3")
+            mixer.music.set_volume(0.25)
+            mixer.music.play()
+            victory_sound_played = 1
         for item in field_list:
             if item.mine == 1:
                 item.flagged = 1
