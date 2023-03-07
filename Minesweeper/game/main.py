@@ -82,7 +82,7 @@ class Restart_button(pygame.sprite.Sprite):
                 item.clicked = 0
             defeat = 0
             victory = 0
-            death_variant = random.randint(1,2)
+            death_variant = random.randint(1,6)
             defeat_sound_played = 0
             defeat_animation_frame = 0
             score_recorded = 0
@@ -314,7 +314,7 @@ timer_hundreds = 0
 defeat_sound_played = 0
 defeat_animation_frame = 0
 victory_sound_played = 0
-death_variant = random.randint(1,2)
+death_variant = random.randint(1,6)
 counter_x = 33
 counter_y = 149
 index_number = 0
@@ -379,6 +379,35 @@ def defeat_vine():
 
 animation_vine = pygame.image.load("skull.PNG").convert()
 animation_vine.set_colorkey(pygame.Color(255, 255, 255))
+
+def defeat_spunchbop():
+    mixer.music.load("spunchbop.mp3")
+    mixer.music.set_volume(1)
+    mixer.music.play()
+
+animation_spunchbop = pygame.image.load("stare.jpg").convert()
+
+def defeat_shock():
+    mixer.music.load("cave.mp3")
+    mixer.music.set_volume(1)
+    mixer.music.play()
+
+animation_shock = pygame.image.load("shock.PNG").convert()
+animation_shock.set_colorkey((0, 255, 1))
+
+def defeat_trollge_sad():
+    mixer.music.load("trollge_sad2.mp3")
+    mixer.music.set_volume(0.7)
+    mixer.music.play()
+
+animation_trollge_sad = pygame.image.load("trollge_sad.jpg").convert()
+
+def defeat_trollge_sus():
+    mixer.music.load("trollge_sus.mp3")
+    mixer.music.set_volume(0.4)
+    mixer.music.play()
+
+animation_trollge_sus = pygame.image.load("trollge_sus.jpg").convert()
 
 
 # Run until the user asks to quit
@@ -527,6 +556,7 @@ while running:
     screen.blit(mines_second, (655,41))
     screen.blit(mines_third, (691,41))
 
+
     if defeat == 1 and defeat_sound_played == 0 and death_variant == 1:
         defeat_explode()
         defeat_sound_played = 1
@@ -544,6 +574,7 @@ while running:
             frame_play_time = pygame.time.get_ticks()
             defeat_animation_frame += 1
 
+
     if defeat == 1 and defeat_sound_played == 0 and death_variant == 2:
         defeat_vine()
         defeat_sound_played = 1
@@ -559,6 +590,82 @@ while running:
         animation_vine.set_alpha(230-8*defeat_animation_frame)
         vine_resized = pygame.transform.scale(animation_vine, (150+10*defeat_animation_frame,150+10*defeat_animation_frame))
         screen.blit(vine_resized, (position_x_explosion+22-75-5*defeat_animation_frame, position_y_explosion+22-75-5*defeat_animation_frame))
+        defeat_animation_frame += 1
+
+
+    if defeat == 1 and defeat_sound_played == 0 and death_variant == 3:
+        defeat_spunchbop()
+        defeat_sound_played = 1
+
+    if defeat == 1 and defeat_animation_frame <= 88 and death_variant == 3:
+        position_x_explosion = 0
+        position_y_explosion = 0
+        while position_x_explosion == 0 and position_y_explosion == 0:
+            for item in field_list:
+                if item.mine == 1 and item.clicked == 1:
+                    position_x_explosion = item.position_x
+                    position_y_explosion = item.position_y
+        animation_spunchbop.set_alpha(220-1.5*defeat_animation_frame)
+        spunchbop_resized = pygame.transform.scale(animation_spunchbop, (44+defeat_animation_frame,44+defeat_animation_frame))
+        screen.blit(spunchbop_resized, (position_x_explosion-0.5*defeat_animation_frame, position_y_explosion-0.5*defeat_animation_frame))
+        defeat_animation_frame += 1
+    elif defeat == 1 and defeat_animation_frame > 88 and defeat_animation_frame < 108 and death_variant == 3:
+        animation_spunchbop.set_alpha(88-9*(defeat_animation_frame - 88))
+        spunchbop_resized = pygame.transform.scale(animation_spunchbop, (132, 132))
+        screen.blit(spunchbop_resized, (position_x_explosion-44, position_y_explosion-44))
+        defeat_animation_frame += 1
+
+
+    if defeat == 1 and defeat_sound_played == 0 and death_variant == 4:
+        defeat_shock()
+        defeat_sound_played = 1
+
+    if defeat == 1 and defeat_animation_frame <= 135 and death_variant == 4:
+        position_x_explosion = 0
+        position_y_explosion = 0
+        while position_x_explosion == 0 and position_y_explosion == 0:
+            for item in field_list:
+                if item.mine == 1 and item.clicked == 1:
+                    position_x_explosion = item.position_x
+                    position_y_explosion = item.position_y
+        animation_shock.set_alpha(220-2*defeat_animation_frame)
+        shock_resized = pygame.transform.scale(animation_shock, (150+4*defeat_animation_frame,150+4*defeat_animation_frame))
+        screen.blit(shock_resized, (position_x_explosion+22-75-2*defeat_animation_frame, position_y_explosion+22-75-2*defeat_animation_frame))
+        defeat_animation_frame += 1
+
+
+    if defeat == 1 and defeat_sound_played == 0 and death_variant == 5:
+        defeat_trollge_sad()
+        defeat_sound_played = 1
+
+    if defeat == 1 and defeat_animation_frame <= 90 and death_variant == 5:
+        position_x_explosion = 0
+        position_y_explosion = 0
+        while position_x_explosion == 0 and position_y_explosion == 0:
+            for item in field_list:
+                if item.mine == 1 and item.clicked == 1:
+                    position_x_explosion = item.position_x
+                    position_y_explosion = item.position_y
+        animation_trollge_sad.set_alpha(200-2.5*defeat_animation_frame)
+        trollge_sad_resized = pygame.transform.scale(animation_trollge_sad, (60+2*defeat_animation_frame,60+2*defeat_animation_frame))
+        screen.blit(trollge_sad_resized, (position_x_explosion+22-30-defeat_animation_frame, position_y_explosion+22-30-defeat_animation_frame))
+        defeat_animation_frame += 1
+
+    if defeat == 1 and defeat_sound_played == 0 and death_variant == 6:
+        defeat_trollge_sus()
+        defeat_sound_played = 1
+
+    if defeat == 1 and defeat_animation_frame <= 200 and death_variant == 6:
+        position_x_explosion = 0
+        position_y_explosion = 0
+        while position_x_explosion == 0 and position_y_explosion == 0:
+            for item in field_list:
+                if item.mine == 1 and item.clicked == 1:
+                    position_x_explosion = item.position_x
+                    position_y_explosion = item.position_y
+        animation_trollge_sus.set_alpha(200-2*defeat_animation_frame)
+        trollge_sus_resized = pygame.transform.scale(animation_trollge_sus, (60+2*defeat_animation_frame,60+2*defeat_animation_frame))
+        screen.blit(trollge_sus_resized, (position_x_explosion+22-30-1*defeat_animation_frame, position_y_explosion+22-30-1*defeat_animation_frame))
         defeat_animation_frame += 1
     
 
